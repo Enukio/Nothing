@@ -2,14 +2,34 @@ import os
 import re
 import requests
 import logging
+from colorama import init, Fore, Style
 
-# Configure logging with custom name and format
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - MyScript - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+# Initialize colorama
+init(autoreset=True)
+
+# Custom logging formatter with colors
+class ColorFormatter(logging.Formatter):
+    def format(self, record):
+        # Define color styles for log levels
+        level_color = {
+            'INFO': Fore.CYAN,          # INFO: Cyan
+            'WARNING': Fore.MAGENTA,    # WARNING: Magenta
+            'ERROR': Fore.YELLOW,       # ERROR: Yellow
+            'CRITICAL': Fore.RED + Style.BRIGHT  # CRITICAL: Bright Red
+        }.get(record.levelname, Fore.WHITE)  # Default to white
+        
+        # Add color to the log level and message
+        record.levelname = f"{level_color}{record.levelname}{Style.RESET_ALL}"
+        record.msg = f"{Style.BRIGHT}{record.msg}{Style.RESET_ALL}"
+        return super().format(record)
+
+# Configure logger
+formatter = ColorFormatter('%(asctime)s - MyScript - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
 logger = logging.getLogger('MyScript')
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 def download_js_file(url, output_dir):
     """
@@ -19,6 +39,7 @@ def download_js_file(url, output_dir):
     :param output_dir: The directory where the file should be saved.
     """
     try:
+        logger.info(f"Attempting to download file from: {url}")
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         filename = os.path.basename(url)
@@ -27,9 +48,9 @@ def download_js_file(url, output_dir):
         
         with open(file_path, 'wb') as f:
             f.write(response.content)
-        logger.info(f"Downloaded and saved: {file_path}")
+        logger.info(f"Successfully downloaded and saved: {file_path}")
     except requests.RequestException as e:
-        logger.warning(f"Failed to download {url}: {e}")
+        logger.error(f"Failed to download {url}: {e}")
 
 def get_main_js_format(base_url, output_dir="./"):
     """
@@ -40,7 +61,6 @@ def get_main_js_format(base_url, output_dir="./"):
     :return: A list of URLs of downloaded JavaScript files or None if no matches are found.
     """
     try:
-        # Fetch the main page content
         logger.info(f"Fetching base URL: {base_url}")
         response = requests.get(base_url, timeout=10)
         response.raise_for_status()
@@ -60,18 +80,31 @@ def get_main_js_format(base_url, output_dir="./"):
             
             return downloaded_files
         else:
-            logger.info("No matching JavaScript files found.")
+            logger.warning("No matching JavaScript files found.")
             return None
     except requests.RequestException as e:
-        logger.warning(f"Error fetching the base URL: {e}")
+        logger.error(f"Error fetching the base URL: {e}")
         return None
 
-# Example usage
+def test_logging():
+    """
+    Function to demonstrate colored log levels.
+    """
+    logger.info("This is a demonstration of an INFO message.")
+    logger.warning("This is a demonstration of a WARNING message.")
+    logger.error("This is a demonstration of an ERROR message.")
+    logger.critical("This is a demonstration of a CRITICAL message.")
+
+# Main block for execution
 if __name__ == "__main__":
+    # Test log levels with colors
+    test_logging()
+
+    # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
     OUTPUT_DIR = "./js_files"
     downloaded_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
     if downloaded_files:
         logger.info(f"Downloaded files: {downloaded_files}")
     else:
-        logger.info("No files downloaded.")
+        logger.info("No files were downloaded.")
