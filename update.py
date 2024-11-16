@@ -90,10 +90,10 @@ def test_logging():
     """
     Function to demonstrate colored log levels.
     """
-    logger.info("This is a demonstration of an INFO message.")
-    logger.warning("This is a demonstration of a WARNING message.")
-    logger.error("This is a demonstration of an ERROR message.")
-    logger.critical("This is a demonstration of a CRITICAL message.")
+    logger.info("INFO message.")
+    logger.warning("WARNING message.")
+    logger.error("ERROR message.")
+    logger.critical("CRITICAL message.")
 
 # Main block for execution
 if __name__ == "__main__":
