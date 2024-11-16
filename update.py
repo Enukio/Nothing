@@ -17,17 +17,18 @@ class ColorFormatter(logging.Formatter):
             'ERROR': Fore.YELLOW,       # ERROR: Yellow
             'CRITICAL': Fore.RED + Style.BRIGHT  # CRITICAL: Bright Red
         }.get(record.levelname, Fore.WHITE)  # Default to white
-        
-        # Add color to the log level and message
+
+        # Add color to the log level and "[Enukio]"
         record.levelname = f"{level_color}{record.levelname}{Style.RESET_ALL}"
+        record.enukio = f"{Fore.RED}[Enukio]{Style.RESET_ALL}"  # [Enukio] in red
         record.msg = f"{Style.BRIGHT}{record.msg}{Style.RESET_ALL}"
         return super().format(record)
 
 # Configure logger
-formatter = ColorFormatter('%(asctime)s - MyScript - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
+formatter = ColorFormatter('%(enukio)s - %(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
-logger = logging.getLogger('MyScript')
+logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
