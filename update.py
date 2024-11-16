@@ -86,20 +86,8 @@ def get_main_js_format(base_url, output_dir="./"):
         logger.error(f"Error fetching the base URL: {e}")
         return None
 
-def test_logging():
-    """
-    Function to demonstrate colored log levels.
-    """
-    logger.info("INFO message.")
-    logger.warning("WARNING message.")
-    logger.error("ERROR message.")
-    logger.critical("CRITICAL message.")
-
 # Main block for execution
 if __name__ == "__main__":
-    # Test log levels with colors
-    test_logging()
-
     # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
     OUTPUT_DIR = "./js_files"
