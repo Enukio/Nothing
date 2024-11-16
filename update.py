@@ -2,10 +2,32 @@ import os
 import re
 import requests
 import logging
+from colorama import Fore, Style
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Configure logging with color-coded levels
+class CustomFormatter(logging.Formatter):
+    """
+    Custom logging formatter to add colors to specific log levels.
+    """
+    FORMATS = {
+        logging.DEBUG: f"{Style.BRIGHT}{Fore.BLUE}%(asctime)s - MyScript - DEBUG - %(message)s{Style.RESET_ALL}",
+        logging.INFO: f"{Style.BRIGHT}{Fore.GREEN}%(asctime)s - MyScript - INFO - %(message)s{Style.RESET_ALL}",
+        logging.WARNING: f"{Style.BRIGHT}{Fore.YELLOW}%(asctime)s - MyScript - WARNING - %(message)s{Style.RESET_ALL}",
+        logging.ERROR: f"{Style.BRIGHT}{Fore.RED}%(asctime)s - MyScript - ERROR - %(message)s{Style.RESET_ALL}",
+        logging.CRITICAL: f"{Style.BRIGHT}{Fore.MAGENTA}%(asctime)s - MyScript - CRITICAL - %(message)s{Style.RESET_ALL}",
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno, "%(message)s")
+        formatter = logging.Formatter(log_fmt, datefmt='%Y-%m-%d %H:%M:%S')
+        return formatter.format(record)
+
+# Set up logger with the custom formatter
+logger = logging.getLogger('MyScript')
+handler = logging.StreamHandler()
+handler.setFormatter(CustomFormatter())
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)  # Set the desired log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
 def download_js_file(url, output_dir):
     """
@@ -59,7 +81,7 @@ def get_main_js_format(base_url, output_dir="./"):
             logger.info("No matching JavaScript files found.")
             return None
     except requests.RequestException as e:
-        logger.warning(f"Error fetching the base URL: {e}")
+        logger.error(f"Error fetching the base URL: {e}")
         return None
 
 # Example usage
