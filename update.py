@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+import time
 import requests
 import logging
 from colorama import init, Fore, Style
@@ -10,17 +12,15 @@ init(autoreset=True)
 # Custom logging formatter with colors
 class ColorFormatter(logging.Formatter):
     def format(self, record):
-        # Define color styles for log levels
         level_color = {
-            'INFO': Fore.CYAN,          # INFO: Cyan
-            'WARNING': Fore.MAGENTA,    # WARNING: Magenta
-            'ERROR': Fore.YELLOW,       # ERROR: Yellow
-            'CRITICAL': Fore.RED + Style.BRIGHT  # CRITICAL: Bright Red
-        }.get(record.levelname, Fore.WHITE)  # Default to white
+            'INFO': Fore.CYAN,
+            'WARNING': Fore.MAGENTA,
+            'ERROR': Fore.YELLOW,
+            'CRITICAL': Fore.RED + Style.BRIGHT
+        }.get(record.levelname, Fore.WHITE)
 
-        # Add color to the log level and "[Enukio]"
         record.levelname = f"{level_color}{record.levelname}{Style.RESET_ALL}"
-        record.enukio = f"{Fore.RED}[Enukio]{Style.RESET_ALL}"  # [Enukio] in red
+        record.enukio = f"{Fore.RED}[Enukio]{Style.RESET_ALL}"
         record.msg = f"{Style.BRIGHT}{record.msg}{Style.RESET_ALL}"
         return super().format(record)
 
@@ -32,6 +32,25 @@ logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
+def loading_bar(total_size, chunk_size, url):
+    """
+    Display a loading bar during download.
+    :param total_size: Total file size in bytes.
+    :param chunk_size: Size of each downloaded chunk in bytes.
+    :param url: URL being downloaded (for logging).
+    """
+    bar_length = 30
+    print(f"{Fore.GREEN}Downloading {url}{Style.RESET_ALL}")
+    for progress in range(0, total_size, chunk_size):
+        time.sleep(0.1)  # Simulate delay for each chunk
+        percent = (progress + chunk_size) / total_size * 100
+        bar = '#' * int((progress / total_size) * bar_length)
+        sys.stdout.write(
+            f"\r{Fore.YELLOW}[{bar:<30}] {percent:.2f}% {Style.RESET_ALL}"
+        )
+        sys.stdout.flush()
+    print("\nDownload complete!")
+
 def download_js_file(url, output_dir):
     """
     Download a JavaScript file from the given URL and save it to the specified directory.
@@ -41,14 +60,23 @@ def download_js_file(url, output_dir):
     """
     try:
         logger.info(f"Attempting to download file from: {url}")
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, stream=True, timeout=10)
         response.raise_for_status()
         filename = os.path.basename(url)
         os.makedirs(output_dir, exist_ok=True)
         file_path = os.path.join(output_dir, filename)
-        
+
+        total_size = int(response.headers.get('Content-Length', 0))  # Get total file size
+        chunk_size = 1024  # Size of each chunk
+        downloaded_size = 0
+
         with open(file_path, 'wb') as f:
-            f.write(response.content)
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:  # Filter out keep-alive chunks
+                    f.write(chunk)
+                    downloaded_size += len(chunk)
+                    loading_bar(total_size, chunk_size, url)  # Update loading bar
+
         logger.info(f"Successfully downloaded and saved: {file_path}")
     except requests.RequestException as e:
         logger.error(f"Failed to download {url}: {e}")
@@ -67,11 +95,10 @@ def get_main_js_format(base_url, output_dir="./"):
         response.raise_for_status()
         content = response.text
 
-        # Use regex to find JavaScript file paths
         matches = re.findall(r'src="(/.*?/index.*?\.js)"', content)
         if matches:
             logger.info(f"Found {len(matches)} JavaScript files matching the pattern.")
-            matches = sorted(set(matches), key=len, reverse=True)  # Remove duplicates and sort
+            matches = sorted(set(matches), key=len, reverse=True)
             downloaded_files = []
 
             for match in matches:
@@ -89,7 +116,6 @@ def get_main_js_format(base_url, output_dir="./"):
 
 # Main block for execution
 if __name__ == "__main__":
-    # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
     OUTPUT_DIR = "./js_files"
     downloaded_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
