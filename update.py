@@ -33,42 +33,40 @@ logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-def progress_bar(duration, width=30):
+def download_js_file_with_progress(url, output_dir):
     """
-    Display a progress bar for a specified duration.
-
-    :param duration: Duration in seconds for the progress bar.
-    :param width: Width of the progress bar in characters.
-    """
-    print(Fore.GREEN + "Processing... ", end='', flush=True)
-    for i in range(width + 1):
-        percent = int((i / width) * 100)
-        bar = f"[{'#' * i}{'.' * (width - i)}] {percent:3d}%"
-        print(Fore.GREEN + bar, end='\r', flush=True)
-        time.sleep(duration / width)
-    print(Fore.GREEN + f"[{'#' * width}] 100% - Processing complete!\n", flush=True)
-
-def download_js_file(url, output_dir):
-    """
-    Download a JavaScript file from the given URL and save it to the specified directory.
+    Download a JavaScript file from the given URL and save it to the specified directory
+    with a progress bar indicating download progress.
 
     :param url: The URL of the JavaScript file.
     :param output_dir: The directory where the file should be saved.
     """
     try:
-        logger.info(f"Attempting to download file from: {url}")
-        response = requests.get(url, timeout=10)
+        logger.info(f"Starting download: {url}")
+        response = requests.get(url, stream=True, timeout=10)
         response.raise_for_status()
+
         filename = os.path.basename(url)
         os.makedirs(output_dir, exist_ok=True)
         file_path = os.path.join(output_dir, filename)
-        
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-        logger.info(f"Successfully downloaded and saved: {file_path}")
 
-        # Trigger progress bar after successful download
-        progress_bar(3, width=40)  # 3-second progress bar
+        total_size = int(response.headers.get('content-length', 0))
+        downloaded_size = 0
+        chunk_size = 1024  # 1 KB chunks
+
+        # Progress bar setup
+        print(Fore.GREEN + f"Downloading {filename}... ", end='', flush=True)
+        with open(file_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(chunk)
+                    downloaded_size += len(chunk)
+                    percent = int((downloaded_size / total_size) * 100)
+                    bar = f"[{'#' * (percent // 2)}{'.' * (50 - (percent // 2))}] {percent:3d}%"
+                    print(Fore.GREEN + bar, end='\r', flush=True)
+
+        print(Fore.GREEN + f"[{'#' * 50}] 100% - Download complete!\n", flush=True)
+        logger.info(f"Successfully downloaded and saved: {file_path}")
     except requests.RequestException as e:
         logger.error(f"Failed to download {url}: {e}")
 
@@ -78,7 +76,6 @@ def get_main_js_format(base_url, output_dir="./"):
 
     :param base_url: The URL of the webpage to scrape.
     :param output_dir: The directory to save the downloaded JavaScript files.
-    :return: A list of URLs of downloaded JavaScript files or None if no matches are found.
     """
     try:
         logger.info(f"Fetching base URL: {base_url}")
@@ -94,7 +91,7 @@ def get_main_js_format(base_url, output_dir="./"):
 
             for match in matches:
                 full_url = f"https://notpx.app{match}"
-                download_js_file(full_url, output_dir)
+                download_js_file_with_progress(full_url, output_dir)
         else:
             logger.warning("No matching JavaScript files found.")
     except requests.RequestException as e:
