@@ -94,6 +94,6 @@ if __name__ == "__main__":
     OUTPUT_DIR = "./js_files"
     downloaded_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
     if downloaded_files:
-        logger.info(f"Downloaded files: {downloaded_files}")
+        logger.info(f"Successfully downloaded {len(downloaded_files)} file(s).")
     else:
         logger.info("No files were downloaded.")
