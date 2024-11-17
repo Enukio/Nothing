@@ -2,6 +2,7 @@ import os
 import re
 import requests
 import logging
+import time
 from colorama import init, Fore, Style
 
 # Initialize colorama
@@ -31,6 +32,21 @@ handler.setFormatter(formatter)
 logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
+
+def progress_bar(duration, width=30):
+    """
+    Display a progress bar for a specified duration.
+
+    :param duration: Duration in seconds for the progress bar.
+    :param width: Width of the progress bar in characters.
+    """
+    print(Fore.GREEN + "Loading... ", end='', flush=True)
+    for i in range(width + 1):
+        percent = int((i / width) * 100)
+        bar = f"[{'#' * i}{'.' * (width - i)}] {percent:3d}%"
+        print(Fore.GREEN + bar, end='\r', flush=True)
+        time.sleep(duration / width)
+    print(Fore.GREEN + f"[{'#' * width}] 100% - Loading complete! Starting main process...\n", flush=True)
 
 def download_js_file(url, output_dir):
     """
@@ -89,6 +105,9 @@ def get_main_js_format(base_url, output_dir="./"):
 
 # Main block for execution
 if __name__ == "__main__":
+    # Display progress bar before script starts
+    progress_bar(5, width=40)  # Duration: 5 seconds, Bar width: 40
+
     # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
     OUTPUT_DIR = "./js_files"
