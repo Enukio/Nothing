@@ -32,39 +32,27 @@ logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-def download_js_file(url, output_dir):
+def save_filename_to_cgi(filenames, output_file):
     """
-    Download a JavaScript file from the given URL and save it to the specified directory.
+    Save the list of JavaScript filenames to a .cgi file.
 
-    :param url: The URL of the JavaScript file.
-    :param output_dir: The directory where the file should be saved.
+    :param filenames: List of JavaScript filenames to save.
+    :param output_file: Path to the .cgi file where filenames will be saved.
     """
     try:
-        logger.info(f"Attempting to download file from: {url}")
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
-        
-        # Extract the filename from the URL
-        filename = os.path.basename(url)
-        
-        # Ensure the output directory exists
-        os.makedirs(output_dir, exist_ok=True)
-        
-        # Save the file to the output directory
-        file_path = os.path.join(output_dir, filename)
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-        
-        logger.info(f"Successfully downloaded and saved: {file_path}")
-    except requests.RequestException as e:
-        logger.error(f"Failed to download {url}: {e}")
+        with open(output_file, 'w') as f:
+            for filename in filenames:
+                f.write(filename + '\n')  # Write each filename on a new line
+        logger.info(f"Saved {len(filenames)} filenames to {output_file}")
+    except Exception as e:
+        logger.error(f"Failed to save filenames to {output_file}: {e}")
 
-def get_main_js_format(base_url, output_dir="./output_files"):
+def get_main_js_format(base_url, output_file="./uhuk.file"):
     """
-    Scrape the base page to find JavaScript files matching the pattern and download them.
+    Scrape the base page to find JavaScript files matching the pattern and save filenames.
 
     :param base_url: The URL of the webpage to scrape.
-    :param output_dir: The directory to save the downloaded JavaScript files.
+    :param output_file: The file to save the list of JavaScript filenames (as .cgi).
     :return: A list of filenames or None if no matches are found.
     """
     try:
@@ -73,18 +61,21 @@ def get_main_js_format(base_url, output_dir="./output_files"):
         response.raise_for_status()
         content = response.text
 
-        # Use regex to find JavaScript file paths in the HTML
+        # Use regex to find JavaScript file paths
         matches = re.findall(r'src="(/.*?/index.*?\.js)"', content)
         if matches:
             logger.info(f"Found {len(matches)} JavaScript files matching the pattern.")
             matches = sorted(set(matches), key=len, reverse=True)  # Remove duplicates and sort
-            
-            # Download each JavaScript file
+            filenames = []
+
             for match in matches:
-                # Construct the full URL
-                full_url = f"https://notpx.app{match}"
-                download_js_file(full_url, output_dir)
-            return matches
+                # Extract the filename with .js extension
+                filename = os.path.basename(match)
+                filenames.append(filename)
+
+            # Save the filenames to the .cgi file
+            save_filename_to_cgi(filenames, output_file)
+            return filenames
         else:
             logger.warning("No matching JavaScript files found.")
             return None
@@ -94,14 +85,9 @@ def get_main_js_format(base_url, output_dir="./output_files"):
 
 # Main block for execution
 if __name__ == "__main__":
-    # Base URL of the webpage to scrape
+    # Simulate the JavaScript file fetching process
     BASE_URL = "https://app.notpx.app"  # Replace with your target URL
-    
-    # Output directory where the files will be saved
-    OUTPUT_DIR = "./uhuk"
-    
-    # Start the scraping and downloading process
-    js_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
-    
-    if not js_files:
-        logger.info("No JavaScript files were downloaded.")
+    OUTPUT_FILE = "./uhuk.file"  # Save all filenames to this .cgi file
+    filenames = get_main_js_format(BASE_URL, OUTPUT_FILE)
+    if not filenames:
+        logger.info("No filenames were saved.")
