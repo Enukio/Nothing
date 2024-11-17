@@ -20,7 +20,7 @@ class ColorFormatter(logging.Formatter):
 
         # Add color to the log level and "[Enukio]"
         record.levelname = f"{level_color}{record.levelname}{Style.RESET_ALL}"
-        record.enukio = f"{Fore.RED}[Enukio]{Style.RESET_ALL}"
+        record.enukio = f"{Fore.RED}[Enukio]{Style.RESET_ALL}"  # [Enukio] in red
         record.msg = f"{Style.BRIGHT}{record.msg}{Style.RESET_ALL}"
         return super().format(record)
 
@@ -32,39 +32,34 @@ logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-def download_file_as_cgi(url, output_dir):
+def download_js_file(url, output_dir):
     """
-    Download a file and save it with a .cgi extension.
+    Download a JavaScript file from the given URL and save it to the specified directory.
 
-    :param url: The URL of the file to download.
+    :param url: The URL of the JavaScript file.
     :param output_dir: The directory where the file should be saved.
     """
     try:
-        if not url.endswith('.js'):
-            logger.warning(f"URL does not point to a JavaScript file: {url}")
-            return
-
         logger.info(f"Attempting to download file from: {url}")
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-
-        # Extract filename and change extension to .cgi
-        filename = os.path.basename(url).replace('.js', '.cgi')
+        filename = os.path.basename(url)
         os.makedirs(output_dir, exist_ok=True)
         file_path = os.path.join(output_dir, filename)
-
+        
         with open(file_path, 'wb') as f:
             f.write(response.content)
-        logger.info(f"Successfully downloaded and saved as CGI: {file_path}")
+        logger.info(f"Successfully downloaded and saved: {file_path}")
     except requests.RequestException as e:
         logger.error(f"Failed to download {url}: {e}")
 
-def get_js_files_and_save_as_cgi(base_url, output_dir="./"):
+def get_main_js_format(base_url, output_dir="./"):
     """
-    Scrape the base page to find JavaScript files, download them, and save as .cgi files.
+    Scrape the base page to find JavaScript files matching the pattern and download them.
 
     :param base_url: The URL of the webpage to scrape.
-    :param output_dir: The directory to save the downloaded CGI files.
+    :param output_dir: The directory to save the downloaded JavaScript files.
+    :return: A list of URLs of downloaded JavaScript files or None if no matches are found.
     """
     try:
         logger.info(f"Fetching base URL: {base_url}")
@@ -73,32 +68,30 @@ def get_js_files_and_save_as_cgi(base_url, output_dir="./"):
         content = response.text
 
         # Use regex to find JavaScript file paths
-        matches = re.findall(r'src="(.*?\.js)"', content)
+        matches = re.findall(r'src="(/.*?/index.*?\.js)"', content)
         if matches:
-            logger.info(f"Found {len(matches)} JavaScript files.")
+            logger.info(f"Found {len(matches)} JavaScript files matching the pattern.")
+            matches = sorted(set(matches), key=len, reverse=True)  # Remove duplicates and sort
             downloaded_files = []
 
             for match in matches:
-                if match.startswith('http'):
-                    full_url = match
-                else:
-                    full_url = f"{base_url.rstrip('/')}/{match.lstrip('/')}"
-
-                download_file_as_cgi(full_url, output_dir)
+                full_url = f"https://notpx.app{match}"
+                download_js_file(full_url, output_dir)
                 downloaded_files.append(full_url)
-
+            
             return downloaded_files
         else:
-            logger.warning("No JavaScript files found.")
-            return []
+            logger.warning("No matching JavaScript files found.")
+            return None
     except requests.RequestException as e:
         logger.error(f"Error fetching the base URL: {e}")
-        return []
+        return None
 
-# Main execution block
+# Main block for execution
 if __name__ == "__main__":
+    # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
-    OUTPUT_DIR = "./cgi_files"
-    downloaded_files = get_js_files_and_save_as_cgi(BASE_URL, OUTPUT_DIR)
-    if not downloaded_files:
+    OUTPUT_DIR = "./js_files"
+    downloaded_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
+if not downloaded_files:
         logger.info("No files were downloaded.")
