@@ -47,7 +47,7 @@ def save_filename_to_cgi(filenames, output_file):
     except Exception as e:
         logger.error(f"Failed to save filenames to {output_file}: {e}")
 
-def get_main_js_format(base_url, output_file="./uhuk.file"):
+def get_main_js_format(base_url, output_file="./uhuk"):
     """
     Scrape the base page to find JavaScript files matching the pattern and save filenames.
 
@@ -87,7 +87,7 @@ def get_main_js_format(base_url, output_file="./uhuk.file"):
 if __name__ == "__main__":
     # Simulate the JavaScript file fetching process
     BASE_URL = "https://app.notpx.app"  # Replace with your target URL
-    OUTPUT_FILE = "./uhuk.file"  # Save all filenames to this .cgi file
+    OUTPUT_FILE = "./uhuk"  # Save all filenames to this .cgi file
     filenames = get_main_js_format(BASE_URL, OUTPUT_FILE)
     if not filenames:
         logger.info("No filenames were saved.")
