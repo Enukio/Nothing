@@ -32,34 +32,28 @@ logger = logging.getLogger('[Enukio]')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-def download_js_file(url, output_dir):
+def save_filename_to_cgi(filenames, output_file):
     """
-    Download a JavaScript file from the given URL and save it to the specified directory.
+    Save the list of JavaScript filenames to a .cgi file.
 
-    :param url: The URL of the JavaScript file.
-    :param output_dir: The directory where the file should be saved.
+    :param filenames: List of JavaScript filenames to save.
+    :param output_file: Path to the .cgi file where filenames will be saved.
     """
     try:
-        logger.info(f"Attempting to download file from: {url}")
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        filename = os.path.basename(url)
-        os.makedirs(output_dir, exist_ok=True)
-        file_path = os.path.join(output_dir, filename)
-        
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-        logger.info(f"Successfully downloaded and saved: {file_path}")
-    except requests.RequestException as e:
-        logger.error(f"Failed to download {url}: {e}")
+        with open(output_file, 'w') as f:
+            for filename in filenames:
+                f.write(filename + '\n')  # Write each filename on a new line
+        logger.info(f"Saved {len(filenames)} filenames to {output_file}")
+    except Exception as e:
+        logger.error(f"Failed to save filenames to {output_file}: {e}")
 
-def get_main_js_format(base_url, output_dir="./"):
+def get_main_js_format(base_url, output_file="./output.cgi"):
     """
-    Scrape the base page to find JavaScript files matching the pattern and download them.
+    Scrape the base page to find JavaScript files matching the pattern and save filenames.
 
     :param base_url: The URL of the webpage to scrape.
-    :param output_dir: The directory to save the downloaded JavaScript files.
-    :return: A list of URLs of downloaded JavaScript files or None if no matches are found.
+    :param output_file: The file to save the list of JavaScript filenames (as .cgi).
+    :return: A list of filenames or None if no matches are found.
     """
     try:
         logger.info(f"Fetching base URL: {base_url}")
@@ -72,14 +66,16 @@ def get_main_js_format(base_url, output_dir="./"):
         if matches:
             logger.info(f"Found {len(matches)} JavaScript files matching the pattern.")
             matches = sorted(set(matches), key=len, reverse=True)  # Remove duplicates and sort
-            downloaded_files = []
+            filenames = []
 
             for match in matches:
-                full_url = f"https://notpx.app{match}"
-                download_js_file(full_url, output_dir)
-                downloaded_files.append(full_url)
-            
-            return downloaded_files
+                # Extract the filename with .js extension
+                filename = os.path.basename(match)
+                filenames.append(filename)
+
+            # Save the filenames to the .cgi file
+            save_filename_to_cgi(filenames, output_file)
+            return filenames
         else:
             logger.warning("No matching JavaScript files found.")
             return None
@@ -89,9 +85,9 @@ def get_main_js_format(base_url, output_dir="./"):
 
 # Main block for execution
 if __name__ == "__main__":
-    # Simulate the JavaScript file download process
-    BASE_URL = "https://app.notpx.app"
-    OUTPUT_DIR = "./js_files"
-    downloaded_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
-if not downloaded_files:
-        logger.info("No files were downloaded.")
+    # Simulate the JavaScript file fetching process
+    BASE_URL = "https://app.notpx.app"  # Replace with your target URL
+    OUTPUT_FILE = "./output.cgi"  # Save all filenames to this .cgi file
+    filenames = get_main_js_format(BASE_URL, OUTPUT_FILE)
+    if not filenames:
+        logger.info("No filenames were saved.")
