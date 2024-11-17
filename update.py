@@ -91,28 +91,18 @@ def get_main_js_format(base_url, output_dir="./"):
         if matches:
             logger.info(f"Found {len(matches)} JavaScript files matching the pattern.")
             matches = sorted(set(matches), key=len, reverse=True)  # Remove duplicates and sort
-            downloaded_files = []
 
             for match in matches:
                 full_url = f"https://notpx.app{match}"
                 download_js_file(full_url, output_dir)
-                downloaded_files.append(full_url)
-            
-            return downloaded_files
         else:
             logger.warning("No matching JavaScript files found.")
-            return None
     except requests.RequestException as e:
         logger.error(f"Error fetching the base URL: {e}")
-        return None
 
 # Main block for execution
 if __name__ == "__main__":
     # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
     OUTPUT_DIR = "./js_files"
-    downloaded_files = get_main_js_format(BASE_URL, OUTPUT_DIR)
-    if downloaded_files:
-        logger.info(f"Downloaded files: {downloaded_files}")
-    else:
-        logger.info("No files were downloaded.")
+    get_main_js_format(BASE_URL, OUTPUT_DIR)
