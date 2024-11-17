@@ -40,13 +40,13 @@ def progress_bar(duration, width=30):
     :param duration: Duration in seconds for the progress bar.
     :param width: Width of the progress bar in characters.
     """
-    print(Fore.GREEN + "Loading... ", end='', flush=True)
+    print(Fore.GREEN + "Processing... ", end='', flush=True)
     for i in range(width + 1):
         percent = int((i / width) * 100)
         bar = f"[{'#' * i}{'.' * (width - i)}] {percent:3d}%"
         print(Fore.GREEN + bar, end='\r', flush=True)
         time.sleep(duration / width)
-    print(Fore.GREEN + f"[{'#' * width}] 100% - Loading complete! Starting main process...\n", flush=True)
+    print(Fore.GREEN + f"[{'#' * width}] 100% - Processing complete!\n", flush=True)
 
 def download_js_file(url, output_dir):
     """
@@ -66,6 +66,9 @@ def download_js_file(url, output_dir):
         with open(file_path, 'wb') as f:
             f.write(response.content)
         logger.info(f"Successfully downloaded and saved: {file_path}")
+
+        # Trigger progress bar after successful download
+        progress_bar(3, width=40)  # 3-second progress bar
     except requests.RequestException as e:
         logger.error(f"Failed to download {url}: {e}")
 
@@ -105,9 +108,6 @@ def get_main_js_format(base_url, output_dir="./"):
 
 # Main block for execution
 if __name__ == "__main__":
-    # Display progress bar before script starts
-    progress_bar(5, width=40)  # Duration: 5 seconds, Bar width: 40
-
     # Simulate the JavaScript file download process
     BASE_URL = "https://app.notpx.app"
     OUTPUT_DIR = "./js_files"
