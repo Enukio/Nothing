@@ -2,7 +2,7 @@ This for update index. Example: index-ClDz0cgb.js
 
 ## Installation
 ```shell
-git clone https://github.com/Enukio/Notpixel.git
+git clone https://github.com/Enukio/Update-Index.git
 cd NotPixels
 ```
 ```shell
