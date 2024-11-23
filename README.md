@@ -92,4 +92,4 @@ Logs are displayed in the terminal and include the name of the bot for easy iden
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the [MIT License](LICENSE).
