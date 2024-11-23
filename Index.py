@@ -93,7 +93,7 @@ def get_main_js_format(base_url, output_file="./cgi"):
 
 # Main block for execution
 BASE_URL = "https://example.com"  # Replace with the actual URL to test
-OUTPUT_FILE = "./cgi"  # Save all filenames to this px file
+OUTPUT_FILE = "./cgi"  # Save all filenames to this file
 
 # Let's run the function and capture filenames
 filenames = get_main_js_format(BASE_URL, OUTPUT_FILE)
