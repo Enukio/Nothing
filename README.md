@@ -1,62 +1,58 @@
 
-# JavaScript File Fetcher
+# JavaScript Filename Extractor
 
-This Python script is designed to fetch JavaScript file paths from a specified base URL and save the filenames to a text file. It is particularly useful for analyzing airdrop bot pages on Telegram, as it identifies and extracts JavaScript filenames often used in such contexts. The script includes error handling, retry mechanisms, and color coded logging for enhanced usability.
+This project provides a Python script for extracting and saving filenames of JavaScript files (`index.js`) from a given webpage. It leverages the `requests` library for making HTTP requests and `loguru` for enhanced logging.
+
+---
 
 ## Features
 
-- Fetches JavaScript file paths from the `src` attributes of HTML pages.
-- Saves unique filenames to an output file.
-- Uses retry logic for robust HTTP request handling.
-- Provides color coded logging for better readability.
+- **URL Validation**: Ensures the provided base URL is valid.
+- **Retry Mechanism**: Automatically retries failed HTTP requests.
+- **JavaScript Filename Extraction**: Uses regular expressions to locate JavaScript files in the HTML source of a webpage.
+- **Storage Support**: Saves extracted filenames to a specified file.
+- **Customizable Base URL and Output File**: The script allows configuring the base URL and output file path.
 
-## Requirements
+## Prerequisites
 
-- Python 3.7 or higher
+Ensure the following Python packages are installed:
+
 - `requests`
-- `colorama`
+- `loguru`
 
-## Installation
+Install them via pip:
 
-1. Clone this repository:
-
-   ```bash
-   git clone https://github.com/Enukio/Update-Index.git
-   ```
-   ```bash
-   cd Update-Index
-   ```
-
-2. Install the required dependencies:
-
-   ```bash
-   pip install requests colorama
-   ```
+```bash
+pip install requests loguru
+```
 
 ## Usage
 
-1. Open the `Index.py` file.
+1. Clone this repository:
 
-2. Locate the following lines:
+```bash
+git clone https://github.com/Enukio/Update-Index.git
+```
+```bash
+cd Update-Index
+```
 
-   ```python
-   BASE_URL = "https://example.com"  # Replace with the actual URL to test
-   OUTPUT_FILE = "./cgi"  # Save all filenames to this file
-   ```
+2. Edit the script to set the correct `BASE_URL` and `OUTPUT_FILE` in the `Index.py` file:
 
-3. Replace `https://example.com` with your desired URL. For example:
+```python
+BASE_URL = "https://example.com"  # Replace with your target URL
+OUTPUT_FILE = "./cgi"  # File where filenames will be saved
+```
 
-   ```python
-   BASE_URL = "https://target-airdrop-bot.com"
-   ```
+3. Run the script:
 
-4. Run the script:
+```bash
+python Index.py
+```
 
-   ```bash
-   python Index.py
-   ```
+4. Output files will be saved to the specified `OUTPUT_FILE` path.
 
-5. The script will fetch JavaScript filenames and save them to the specified output file (default: `./cgi`).
+---
 
 ## Example Output
 
@@ -72,23 +68,20 @@ When run with a valid URL containing JavaScript files, the script will find `<sc
 index-abc123.js
 ```
 
-These filenames are stored in the output file specified by `OUTPUT_FILE`.
-
-## Customization
-
-- To change the base URL dynamically, modify the `BASE_URL` variable in the script.
-- To change the output file location, update the `OUTPUT_FILE` variable.
+---
 
 ## Logging
 
-The script uses a custom logging format with color coded log levels:
+The script outputs detailed logs with colored formatting, including:
 
-- **INFO**: Cyan
-- **WARNING**: Magenta
-- **ERROR**: Yellow
-- **CRITICAL**: Bright Red
+- The number of JavaScript files found.
+- Success or error messages for file-saving operations.
+- Issues with fetching the webpage or unexpected content types.
 
-Logs are displayed in the terminal and include the name of the bot for easy identification.
+## Limitations
+
+- Assumes JavaScript filenames match the pattern `/index*.js`.
+- Designed for basic extraction and may require adjustments for complex or dynamically loaded webpages.
 
 ## License
 
