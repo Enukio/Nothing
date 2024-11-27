@@ -7,8 +7,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 # Constants
-BASE_URL = "https://app.notpx.app"  # Replace with the actual URL
-OUTPUT_FILE = "./px"  # File to save filenames
+BASE_URL = "https://example.com"  # Replace with the actual URL
+OUTPUT_FILE = "./cgi"  # File to save filenames
 
 # Configure logger
 logger.remove()
@@ -32,7 +32,7 @@ def storage(filenames, output_file):
         logger.error(f"Failed to save filenames to {output_file}: {e}")
 
 # Function to fetch JavaScript filenames from a base URL
-def get_main_js_format(base_url, output_file="./px"):
+def get_main_js_format(base_url, output_file="./cgi"):
     if not base_url.startswith(("http://", "https://")):
         logger.error(f"Invalid URL format: {base_url}")
         return None
